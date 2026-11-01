@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MLB BASEBALL OPERATIONS</title>
+<style>
+/* Deep-blue glass theme (CSS only: no markup or script changes) */
+:root{
+  --bg-top:#142c55; --bg-mid:#1f4577; --bg-bot:#2e5f95;
+  --glass:rgba(255,255,255,.09); --glass-2:rgba(255,255,255,.16); --glass-line:rgba(255,255,255,.18);
+  --on-dark:#ffffff; --on-dark-muted:rgba(255,255,255,.68);
+  --panel:rgba(245,248,254,.94); --panel-text:#11264b; --panel-muted:#667897; --panel-line:#dce5f3; --panel-line-strong:#c6d3e8;
+  --amber:#f2b134; --amber-deep:#8a5600; --amber-soft:#fff2d3;
+  --lav-1:#f6f3ff; --lav-2:#d9cffa;
+  --row-hover:#e6eefb; --cell-hover:#cfe0f8;
+  --ok:#12794a; --ok-bg:#dcf4e7; --sign:#1f4e96; --sign-bg:#e1ebfb;
+  --red:#ffb4b4; --red-on-panel:#c0392b;
+  --shadow:0 10px 30px rgba(7,20,48,.35);
+  --r:24px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{background:var(--bg-bot)}
+body{margin:0;min-height:100vh;color:var(--on-dark);
+  background:
+    radial-gradient(1100px 500px at 88% -8%,rgba(255,255,255,.16),transparent 60%),
+    linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 55%,var(--bg-bot) 100%);
+  font:14.5px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Poppins","Inter","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+
+.hero{background:transparent;color:#fff}
+.hero-in{max-width:1280px;margin:0 auto;padding:30px 20px 10px}
+.brand{display:flex;align-items:center;gap:18px}
+.brand img{height:52px;width:auto;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+h1{font-size:24px;font-weight:800;letter-spacing:.3px;margin:0}
+#status{font-size:12.5px;color:var(--on-dark-muted);margin-top:6px;min-height:18px}
+.legal{margin:30px 4px 0;font-size:12px;color:var(--on-dark-muted);line-height:1.6}
+
+.wrap{max-width:1280px;margin:0 auto;padding:18px 20px 56px}
+
+/* Glass cards (filters, team bar) */
+.card{background:var(--glass);border:1px solid var(--glass-line);border-radius:var(--r);padding:18px 20px;margin-bottom:18px;
+  box-shadow:var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+
+/* Light frosted panels (tables, parent company) */
+.tbl-wrap,#parentBox{background:var(--panel);color:var(--panel-text);border-color:rgba(255,255,255,.7)}
+.tbl-wrap{overflow-x:auto;padding:6px 10px}
+#parentBox{padding:18px 22px}
+
+.team-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.team-pick label{display:block;font-size:13.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--on-dark);margin-bottom:7px}
+.team-row img{width:48px;height:48px;object-fit:contain;background:#fff;border-radius:16px;padding:7px;box-shadow:0 4px 12px rgba(7,20,48,.25)}
+
+select,input{font:inherit;color:var(--on-dark);background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.24);border-radius:14px;padding:9px 13px;min-width:0;color-scheme:dark;transition:border-color .15s,box-shadow .15s,background .15s}
+select option{background:#173562;color:#fff}
+select optgroup{background:#0f2447;color:#f2b134;font-weight:800;font-style:normal;letter-spacing:.04em}
+select optgroup option{background:#173562;color:#fff;font-weight:500}
+input::placeholder{color:rgba(255,255,255,.5)}
+select:hover,input:hover{border-color:rgba(255,255,255,.45)}
+select:focus,input:focus{outline:none;border-color:var(--amber);background:rgba(255,255,255,.14);box-shadow:0 0 0 3px rgba(242,177,52,.28)}
+#teamSel{font-size:16px;font-weight:700;min-width:300px}
+
+/* Tabs: glass pills, active = lavender button */
+.tabs{display:flex;gap:10px;margin:4px 0 18px;flex-wrap:wrap}
+.tab{padding:12px 26px;border:1px solid var(--glass-line);border-radius:999px;background:var(--glass);color:var(--on-dark);font:inherit;font-size:15px;font-weight:700;cursor:pointer;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:background .15s,color .15s,border-color .15s,transform .1s}
+.tab:hover{background:var(--glass-2);border-color:rgba(255,255,255,.4)}
+.tab[aria-selected="true"]{background:linear-gradient(90deg,var(--lav-1),var(--lav-2));color:#1b2a52;border-color:transparent;box-shadow:0 8px 22px rgba(7,20,48,.35)}
+
+.filters{display:grid;grid-template-columns:2fr 1fr 1.3fr auto;gap:14px;align-items:end}
+.filters.aw{grid-template-columns:1.4fr .8fr 1.4fr auto}
+.filters.fa{grid-template-columns:2fr 1fr 1.3fr 1fr .8fr auto}
+.filters label{display:block;font-size:13.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--on-dark);margin-bottom:7px}
+.filters .f{min-width:0}
+.filters input,.filters select{width:100%}
+button.reset{padding:9px 20px;border:1px solid rgba(255,255,255,.35);background:transparent;color:var(--on-dark);border-radius:999px;font:inherit;font-weight:700;cursor:pointer;transition:background .15s}
+button.reset:hover{background:rgba(255,255,255,.14)}
+.count{font-size:12.5px;color:var(--on-dark-muted);margin:14px 0 0}
+.tbl-wrap .count{color:var(--panel-muted)}
+
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:13px 12px;border-bottom:1px solid var(--panel-line);white-space:nowrap;vertical-align:middle}
+th{font-size:13.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--panel-text);user-select:none;border-bottom:1px solid var(--panel-line-strong)}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:#2a5db0}
+tbody td{transition:background .1s}
+tbody tr:hover td{background:var(--row-hover)}
+tbody tr:hover td:first-child{box-shadow:inset 4px 0 0 var(--amber)}
+tbody td:hover{background:var(--cell-hover) !important}
+tbody tr:last-child td{border-bottom:0}
+td{font-variant-numeric:tabular-nums;color:var(--panel-text)}
+td.num{color:var(--panel-muted);width:56px}
+td.wrap-ok{white-space:normal;min-width:150px}
+td a{color:var(--panel-text);font-weight:700;text-decoration:none}
+td a:hover{color:#2a5db0;text-decoration:underline;text-underline-offset:3px}
+.en{color:var(--panel-muted);font-size:11.5px;margin-left:6px;font-weight:500}
+.en.block{display:block;margin:2px 0 0}
+
+.award{display:inline-block;margin:2px 6px 2px 0;padding:2px 11px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.6;color:var(--amber-deep);background:var(--amber-soft);border:1px solid var(--amber);cursor:default}
+.dim{color:var(--panel-muted)}
+td.awards-cell{white-space:normal;min-width:260px;max-width:420px}
+.parent-name{font-size:17px;font-weight:800;margin-bottom:4px;color:var(--panel-text)}
+.parent-text{color:#27426e;line-height:1.6}
+.sec{font-size:13.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--on-dark);margin:0 0 10px 6px}
+td.fo-role{color:var(--panel-muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;width:110px}
+.chip{display:inline-block;padding:2px 11px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.6}
+.chip.ok{color:var(--ok);background:var(--ok-bg)}
+.chip.sign{color:var(--sign);background:var(--sign-bg)}
+
+.msg{padding:36px 12px;text-align:center;color:var(--panel-muted)}
+.msg.err{color:var(--red-on-panel)}
+#status{word-break:break-word}
+
+@media (max-width:760px){
+  .filters,.filters.fa,.filters.aw{grid-template-columns:1fr 1fr}
+  .filters .f:first-child{grid-column:1/-1}
+  #teamSel{min-width:0;flex:1}
+  .tab{padding:10px 16px;font-size:14px}
+  .hero-in,.wrap{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-in brand">
+  <img id="mlbLogo" src="https://www.mlbstatic.com/team-logos/league-on-dark/1.svg" alt="MLB" onerror="this.style.display='none'">
+  <div>
+    <h1>MLB BASEBALL OPERATIONS</h1>
+    <div id="status">Active Personnel &amp; Squad Tracking</div>
+  </div>
+</div></header>
+<div class="wrap">
+
+  <div class="card team-row" id="teamBar">
+    <img id="logo" alt="" onerror="this.style.visibility='hidden'">
+    <div class="team-pick"><label for="teamSel">Select a Team</label><select id="teamSel"></select></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabRoster" aria-selected="true">Active Roster</button>
+    <button class="tab" role="tab" id="tabCoaches" aria-selected="false">Coaching Staff</button>
+    <button class="tab" role="tab" id="tabFA" aria-selected="false">Free Agents</button>
+    <button class="tab" role="tab" id="tabAwards" aria-selected="false">Awards</button>
+  </div>
+
+  <section id="paneRoster">
+    <div class="card">
+      <div class="filters">
+        <div class="f"><label for="fName">Name</label><input id="fName" type="search" placeholder="Type a name, e.g. Ohtani" autocomplete="off"></div>
+        <div class="f"><label for="fPos">Position</label><select id="fPos"></select></div>
+        <div class="f"><label for="fCountry">Nationality</label><select id="fCountry"></select></div>
+        <button class="reset" id="btnReset">Clear</button>
+      </div>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="card tbl-wrap" id="rosterBox"></div>
+  </section>
+
+  <section id="paneAwards" hidden>
+    <div class="card">
+      <div class="filters aw">
+        <div class="f"><label for="awAward">Award</label><select id="awAward"></select></div>
+        <div class="f"><label for="awSeason">Season</label><select id="awSeason"></select></div>
+        <div class="f"><label for="awName">Name</label><input id="awName" type="search" placeholder="Type a winner's name" autocomplete="off"></div>
+        <button class="reset" id="awReset">Clear</button>
+      </div>
+      <div class="count" id="awCount"></div>
+    </div>
+    <div class="card tbl-wrap" id="awBox"></div>
+  </section>
+
+  <section id="paneFA" hidden>
+    <div class="card">
+      <div class="filters fa">
+        <div class="f"><label for="faName">Name</label><input id="faName" type="search" placeholder="Type a name, e.g. Ohtani" autocomplete="off"></div>
+        <div class="f"><label for="faPos">Position</label><select id="faPos"></select></div>
+        <div class="f"><label for="faCountry">Nationality</label><select id="faCountry"></select></div>
+        <div class="f"><label for="faStatus">Status</label>
+          <select id="faStatus"><option value="">All</option><option value="available">Available</option><option value="signed">Signed</option></select></div>
+        <div class="f"><label for="faSeason">Season</label><select id="faSeason"></select></div>
+        <button class="reset" id="faReset">Clear</button>
+      </div>
+      <div class="count" id="faCount"></div>
+    </div>
+    <div class="card tbl-wrap" id="faBox"></div>
+  </section>
+
+  <section id="paneCoaches" hidden>
+    <div id="foWrap">
+      <h2 class="sec">Parent Company</h2>
+      <div class="card" id="parentBox"></div>
+      <h2 class="sec">Front Office</h2>
+      <div class="card tbl-wrap" id="foBox"></div>
+    </div>
+    <h2 class="sec">Coaching Staff</h2>
+    <div class="card tbl-wrap" id="coachBox"></div>
+  </section>
+  <footer class="legal">This is an independent tool and is not affiliated with or endorsed by Major League Baseball or any club. MLB and team names and logos are trademarks of their respective owners. Player data is provided by MLB's Stats API.</footer>
+</div>
+
+<script>
+"use strict";
+const API = "https://statsapi.mlb.com/api/v1";
+const SEASON = new Date().getFullYear();
+
+/* ---------- Lookup tables ---------- */
+const POS_ORDER = ["P","C","1B","2B","3B","SS","LF","CF","RF","OF","IF","DH","TWP"];
+const POS_NAME = {P:"Pitcher",C:"Catcher","1B":"First Base","2B":"Second Base","3B":"Third Base",SS:"Shortstop",LF:"Left Field",CF:"Center Field",RF:"Right Field",OF:"Outfield",IF:"Infield",DH:"Designated Hitter",TWP:"Two-Way Player"};
+
+
+
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const posIdx = p => { const i = POS_ORDER.indexOf(p); return i < 0 ? 99 : i; };
+
+const COACH_ORDER = [/^manager/i,/bench/i,/pitching coach/i,/hitting coach/i,/assistant.*pitch|pitch.*assistant/i,/assistant.*hit|hit.*assistant/i,
+  /first base/i,/third base/i,/bullpen/i,/catching/i,/infield/i,/outfield/i,/base ?running/i,/quality control/i,/strategy|game plan/i,/strength|conditioning|performance/i];
+function coachRank(job){
+  const i = COACH_ORDER.findIndex(re => re.test(job || ""));
+  return i < 0 ? 99 : i;
+}
+
+async function getJSON(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+/* ---------- State ---------- */
+const state = {teams:[], teamId:null, roster:[], coaches:[], sortKey:"pos", sortDir:1};
+const ROSTER_LIMIT = 40; // every club's roster limit
+const cache = {roster:new Map(), coaches:new Map()};
+
+/* ---------- Teams ---------- */
+async function loadTeams(){
+  try{
+    const data = await getJSON(`${API}/teams?sportId=1&season=${SEASON}`);
+    state.teams = data.teams.filter(t => t.active !== false);
+    setStatus("Loaded " + state.teams.length + " teams. Loading rosters…");
+  }catch(e){
+    $("rosterBox").innerHTML = `<div class="msg err">Could not load the team list (${esc(e.message)}). Check your internet connection and reload.</div>`;
+    setStatus("Could not reach MLB: " + e.message + " (If you are previewing inside a chat window, outside connections are blocked. Download the file and open it in your browser.)");
+    return;
+  }
+  const groups = {};
+  state.teams.forEach(t => {
+    const key = t.division?.name || t.league?.name || "Other";
+    (groups[key] ||= []).push(t);
+  });
+  const order = Object.keys(groups).sort((a,b) => a.localeCompare(b));
+  $("teamSel").innerHTML = `<option value="all">★ All Teams</option>` + order.map(k =>
+    `<optgroup label="${esc(k)}">` +
+    groups[k].sort((a,b)=>a.name.localeCompare(b.name))
+      .map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("") +
+    `</optgroup>`).join("");
+
+  let saved = null;
+  try{ saved = localStorage.getItem("mlb_team"); }catch(_){}
+  const found = state.teams.find(t => String(t.id) === saved);
+  const startId = saved === "all" ? "all" : (found || state.teams[0]).id;
+  $("teamSel").value = startId;
+  selectTeam(startId);
+}
+
+async function selectTeam(id){
+  state.teamId = id === "all" ? "all" : Number(id);
+  renderFrontOffice(state.teamId);
+  try{ localStorage.setItem("mlb_team", id); }catch(_){}
+  const logo = $("logo");
+  if(id === "all"){ logo.style.visibility = "hidden"; }
+  else { logo.style.visibility = "visible"; logo.src = `https://www.mlbstatic.com/team-logos/${id}.svg`; }
+
+  $("rosterBox").innerHTML = `<div class="msg">Loading roster…</div>`;
+  $("coachBox").innerHTML = `<div class="msg">Loading coaching staff…</div>`;
+  $("count").textContent = "";
+
+  loadRoster(state.teamId);
+  loadCoaches(state.teamId);
+}
+
+/* ---------- Players (Active) ---------- */
+async function fetchTeamRoster(tid){
+  if(!cache.roster.has(tid)){
+    const data = await getJSON(`${API}/teams/${tid}/roster?rosterType=active&hydrate=person`);
+    const team = state.teams.find(t => t.id === tid);
+    const list = (data.roster || []).map(r => ({
+      id: r.person?.id,
+      name: r.person?.fullName || "",
+      number: r.jerseyNumber ? Number(r.jerseyNumber) : null,
+      pos: r.position?.abbreviation || "",
+      country: r.person?.birthCountry || "",
+      bats: r.person?.batSide?.code || "",
+      throws: r.person?.pitchHand?.code || "",
+      age: r.person?.currentAge ?? null,
+      team: team ? (team.teamName || team.name) : "",
+      teamId: tid
+    }));
+    cache.roster.set(tid, list);
+  }
+  return cache.roster.get(tid);
+}
+
+async function loadRoster(id){
+  try{
+    if(id === "all"){
+      if(!cache.roster.has("all")){
+        $("rosterBox").innerHTML = `<div class="msg">Loading rosters for all ${state.teams.length} teams…</div>`;
+        const lists = await Promise.all(state.teams.map(t => fetchTeamRoster(t.id)));
+        cache.roster.set("all", lists.flat());
+      }
+    } else {
+      await fetchTeamRoster(id);
+    }
+  }catch(e){
+    if(id === state.teamId) $("rosterBox").innerHTML = `<div class="msg err">Failed to load (${esc(e.message)}). Please select the team again to retry.</div>`;
+    return;
+  }
+  if(id !== state.teamId) return; // user switched teams
+  state.roster = cache.roster.get(id);
+  setStatus("Active roster: " + state.roster.length + " players" + (state.roster.length ? "" : " (MLB returned an empty roster, which is common in the offseason)"));
+  buildFilterOptions();
+  renderRoster();
+  const current = state.roster;
+  loadAwardsFor(current.map(p => p.id), () => { if(state.roster === current) renderRoster(); });
+}
+
+function buildFilterOptions(){
+  const prevPos = $("fPos").value, prevCountry = $("fCountry").value;
+
+  const poss = [...new Set(state.roster.map(p => p.pos).filter(Boolean))].sort((a,b)=>posIdx(a)-posIdx(b));
+  $("fPos").innerHTML = `<option value="">All</option>` +
+    poss.map(p => `<option value="${esc(p)}">${esc(POS_NAME[p] || p)}</option>`).join("");
+
+  const countries = [...new Set(state.roster.map(p => p.country).filter(Boolean))]
+    .sort((a,b) => (a==="USA"?-1:b==="USA"?1:0) || a.localeCompare(b));
+  $("fCountry").innerHTML = `<option value="">All</option>` +
+    countries.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+
+  if(poss.includes(prevPos)) $("fPos").value = prevPos;
+  if(countries.includes(prevCountry)) $("fCountry").value = prevCountry;
+}
+
+function renderRoster(){
+  const q = norm($("fName").value.trim());
+  const pos = $("fPos").value;
+  const country = $("fCountry").value;
+
+  if(!state.roster.length){
+    $("count").textContent = "";
+    $("rosterBox").innerHTML = `<div class="msg">No active roster was returned for this team (it may be empty in the offseason or before rosters are announced).</div>`;
+    return;
+  }
+
+  let rows = state.roster.filter(p =>
+    (!q || norm(p.name).includes(q)) &&
+    (!pos || p.pos === pos) &&
+    (!country || p.country === country));
+
+  const k = state.sortKey, d = state.sortDir;
+  const cmpStr = (a,b) => String(a).localeCompare(String(b));
+  rows.sort((a,b) => {
+    let r = 0;
+    if(k === "pos") r = posIdx(a.pos) - posIdx(b.pos);
+    else if(k === "number") r = (a.number ?? 999) - (b.number ?? 999);
+    else if(k === "age") r = (a.age ?? 999) - (b.age ?? 999);
+    else if(k === "team") r = cmpStr(a.team, b.team);
+    else if(k === "country") r = cmpStr(a.country, b.country);
+    else r = cmpStr(a.name, b.name);
+    return (r || cmpStr(a.name, b.name)) * d;
+  });
+
+  $("count").textContent = `Showing ${rows.length} of ${state.teamId === "all" ? Math.max(state.teams.length * ROSTER_LIMIT, state.roster.length) : Math.max(ROSTER_LIMIT, state.roster.length)} players`;
+
+  const arrow = key => state.sortKey === key ? (state.sortDir === 1 ? " ▲" : " ▼") : "";
+  const th = (key, label) => `<th class="sortable" data-sort="${key}">${label}${arrow(key)}</th>`;
+
+  if(!rows.length){
+    $("rosterBox").innerHTML = `<div class="msg">No players match your filters.</div>`;
+    return;
+  }
+
+  $("rosterBox").innerHTML = `<table>
+    <thead><tr>${th("number","No.")}${th("name","Name")}${state.teamId === "all" ? th("team","Team") : ""}${th("pos","Position")}${th("country","Nationality")}<th>T / B</th>${th("age","Age")}<th>Awards</th></tr></thead>
+    <tbody>${rows.map(p => `<tr>
+      <td class="num">${p.number ?? "—"}</td>
+      <td><a href="https://www.mlb.com/player/${p.id}" target="_blank" rel="noopener">${esc(p.name)}</a></td>
+      ${state.teamId === "all" ? `<td>${esc(p.team)}</td>` : ""}
+      <td>${esc(POS_NAME[p.pos] || p.pos || "—")}</td>
+      <td>${p.country ? esc(p.country) : "—"}</td>
+      <td>${esc(p.throws || "—")} / ${esc(p.bats || "—")}</td>
+      <td>${p.age ?? "—"}</td>
+      <td class="awards-cell">${awardsHTML(p.id)}</td>
+    </tr>`).join("")}</tbody></table>`;
+
+  $("rosterBox").querySelectorAll("th.sortable").forEach(h => h.addEventListener("click", () => {
+    const key = h.dataset.sort;
+    if(state.sortKey === key) state.sortDir *= -1; else { state.sortKey = key; state.sortDir = 1; }
+    renderRoster();
+  }));
+}
+
+/* ---------- Front office (owners, baseball-ops heads, GMs) ----------
+   MLB's data API has no front-office endpoint, so this is a static snapshot compiled from
+   MLB.com team staff directories (Wikipedia / MLB.com news where noted) on 2026-11-01.
+   Only titles that were confirmed are listed. Edit here after front-office changes.
+   Format per team id: o = owners / chairs, e = baseball operations head + GM (highest first).
+   A third item in an entry is a note shown in grey. */
+const FRONT_OFFICE_ASOF = "Nov 1, 2026";
+const FRONT_OFFICE = {
+  109:{o:[["Ken Kendrick","Principal Owner","per Wikipedia owners list"]],e:[["Mike Hazen","General Manager","title per Wikipedia GM list; full title not verified"]]},
+  110:{o:[["David Rubenstein","Principal Owner","per Wikipedia owners list"]],e:[["Mike Elias","President of Baseball Operations and General Manager","MLB.com, Sep 19, 2026"]]},
+  111:{o:[["John W. Henry","Principal Owner"],["Thomas C. Werner","Chairman"]],e:[["Craig Breslow","Chief Baseball Officer"]]},
+  112:{o:[["Tom Ricketts","Chairman"]],e:[["Jed Hoyer","President, Baseball Operations"],["Carter Hawkins","General Manager"]]},
+  113:{o:[["Bob Castellini","Principal Owner","per Wikipedia owners list"]],e:[["Nick Krall","President of Baseball Operations"],["Brad Meador","General Manager"]]},
+  114:{o:[["Paul J. Dolan","Owner / Chairman / Chief Executive Officer"]],e:[["Chris Antonetti","President, Baseball Operations"],["Mike Chernoff","General Manager"]]},
+  115:{o:[["Richard L. Monfort","Owner / Chairman & Chief Executive Officer"],["Charles K. Monfort","Owner / General Partner"]],e:[["Paul DePodesta","President of Baseball Operations"],["Josh Byrnes","General Manager"]]},
+  116:{o:[["Christopher Ilitch","CEO, Ilitch Companies; Chairman and CEO, Detroit Tigers"]],e:[["Scott Harris","President, Baseball Operations"],["Jeff Greenberg","General Manager"]]},
+  117:{o:[["Jim Crane","Owner and Chairman"]],e:[]},
+  118:{o:[["John Sherman","Chairman and CEO"]],e:[["J.J. Picollo","President of Baseball Operations and General Manager"]]},
+  108:{o:[["Arte Moreno","Owner","MLB.com, Sep 1, 2026"]],e:[["John Mozeliak","Interim General Manager","MLB.com, Sep 1, 2026"]]},
+  119:{o:[["Mark Walter","Owner & Chairman"]],e:[["Andrew Friedman","President, Baseball Operations"],["Brandon Gomes","Executive Vice President & General Manager"]]},
+  146:{o:[["Bruce Sherman","Chairman, Principal Owner & Control Person"]],e:[["Peter Bendix","President of Baseball Operations"],["Gabe Kapler","General Manager"]]},
+  158:{o:[["Mark Attanasio","Chairman and Principal Owner"]],e:[["Matt Arnold","President - Baseball Operations and General Manager"]]},
+  142:{o:[["Jim Pohlad","Executive Chair"]],e:[["Jeremy Zoll","Executive Vice President, General Manager"]]},
+  121:{o:[["Steven A. Cohen","Owner, Chairman and CEO"]],e:[["David Stearns","President, Baseball Operations"]]},
+  147:{o:[["Hal Steinbrenner","Managing General Partner / Chairperson"]],e:[["Brian Cashman","Senior Vice President, General Manager"]]},
+  133:{o:[["John J. Fisher","Principal Owner","per Wikipedia owners list"]],e:[["Taylor Smith","President of Baseball Operations","MLB.com, Oct 2026"]]},
+  143:{o:[["John Middleton","Managing Partner and Chief Executive Officer"]],e:[["David Dombrowski","President of Baseball Operations"],["Preston Mattingly","Vice President, General Manager"]]},
+  134:{o:[["Bob Nutting","Chairman of the Board"]],e:[["Ben Cherington","General Manager"]]},
+  135:{o:[["José E. Feliciano","Control Person & Principal Owner"],["Kwanza Jones","Principal Owner"]],e:[["A.J. Preller","President of Baseball Operations & General Manager"]]},
+  137:{o:[["Greg Johnson","Chairman"]],e:[["Buster Posey","President of Baseball Operations"],["Zack Minasian","General Manager"]]},
+  136:{o:[["John Stanton","CEO, Baseball Club of Seattle, LP (owner)","per Wikipedia"]],e:[["Jerry Dipoto","President of Baseball Operations","per Wikipedia"],["Justin Hollander","General Manager","per Wikipedia"]]},
+  138:{o:[["William O. DeWitt Jr.","Chairman and Principal Owner"]],e:[["Chaim Bloom","President of Baseball Operations"]]},
+  139:{o:[["Patrick Zalupski","Principal Owner & Co-Chair"],["Bill Cosgrove","Co-Chair"]],e:[["Erik Neander","President, Baseball Operations"]]},
+  140:{o:[["Ray C. Davis","Managing Partner & Majority Owner"]],e:[["Chris Young","President, Baseball Operations"],["Ross Fenstermaker","General Manager"]]},
+  141:{o:[["Edward Rogers","Chairman, Toronto Blue Jays"]],e:[["Ross Atkins","Executive Vice President, Baseball Operations & General Manager"]]},
+  120:{o:[["Lerner Enterprises","Owner","per Wikipedia"]],e:[["Paul Toboni","President of Baseball Operations","per Wikipedia"],["Anirudh Kilambi","General Manager","per Wikipedia"]]},
+  144:{o:[["Terry McGuirk","Chairman"]],e:[["Alex Anthopoulos","President, Baseball Operations & General Manager"]]},
+  145:{o:[["Jerry Reinsdorf","Chairman"]],e:[["Chris Getz","Executive Vice President/General Manager"]]}
+};
+
+/* ---------- Parent company / ownership group (short English blurbs) ---------- */
+const PARENT_ORG = {
+  108:["Arte Moreno (owner)","Owned by Arte Moreno, who made his fortune in outdoor advertising: his company Outdoor Systems sold billboard and transit advertising and was sold in 1999. He bought the club in 2003."],
+  109:["Diamondbacks ownership group","A partnership of private investors led by Ken Kendrick. It is a group of individual business owners rather than a single operating company."],
+  110:["David Rubenstein's ownership group","Led by David Rubenstein, co-founder of The Carlyle Group, a global private equity and investment firm. The group bought the club in January 2024."],
+  111:["Fenway Sports Group (FSG)","A sports and media holding company led by John W. Henry and Tom Werner. Besides the Red Sox it owns Liverpool FC and most of the NESN sports TV network."],
+  112:["Ricketts family","Owned by the Ricketts family, whose wealth comes from Joe Ricketts's online brokerage TD Ameritrade (now part of Schwab). The family bought the club from the Tribune Company in 2009."],
+  113:["Bob Castellini's ownership group","Led by Bob Castellini, whose business is the Castellini Company, a fresh fruit and vegetable distributor. He took control of the club in 2006."],
+  114:["Dolan family","Owned by the Dolan family since 2000. Its wealth traces to the cable TV business (Cablevision) founded by Charles Dolan, brother of Larry Dolan, who bought the club."],
+  115:["Monfort family","Controlled by brothers Dick and Charlie Monfort. Their family built Monfort, a Colorado cattle-feeding and beef-packing company that was sold to ConAgra."],
+  116:["Ilitch Holdings","The Ilitch family company behind Little Caesars Pizza, one of the largest pizza chains. It also owns the Detroit Red Wings, Olympia Entertainment and the MotorCity Casino Hotel."],
+  117:["Jim Crane (owner)","Owned by Jim Crane, founder of Crane Worldwide Logistics, a global freight-forwarding and supply-chain company. He bought the club in 2011."],
+  118:["John Sherman's ownership group","A partnership of private investors led by John Sherman, Chairman and CEO. It bought the club from David Glass, a former Walmart CEO, in 2019."],
+  119:["Guggenheim Baseball Management","An investor group led by Mark Walter, co-founder of Guggenheim Partners, a global investment and asset-management firm. Walter also controls TWG Global and owns the NBA's Los Angeles Lakers."],
+  120:["Lerner Enterprises","The Lerner family's real estate company, which develops and owns shopping centers, offices and apartments in the Washington, D.C. area. It bought the club in 2006."],
+  121:["Steve Cohen (owner)","Owned by Steve Cohen, founder of Point72 Asset Management, a hedge fund and family office (formerly SAC Capital). He bought the club in 2020."],
+  133:["John Fisher (owner)","Owned by John Fisher, whose family co-founded Gap Inc., the apparel retailer behind Gap, Old Navy and Banana Republic. He took control of the club in 2005."],
+  134:["Nutting family","Owned by Bob Nutting and the Nutting family, owners of Ogden Newspapers, a company that publishes daily and weekly newspapers across the U.S. Controlling owner since 2007."],
+  135:["Feliciano / Jones ownership group","Led by José E. Feliciano, co-founder of Clearlake Capital, a private equity firm, and Kwanza Jones. Clearlake also co-owns Chelsea FC."],
+  136:["Baseball Club of Seattle, LP","A limited partnership led by CEO John Stanton, a telecom entrepreneur who founded Western Wireless and chairs Trilogy International, a wireless company."],
+  137:["San Francisco Baseball Associates LLC","The partnership that has owned the club since 1992, chaired by Greg Johnson, a longtime leader of Franklin Templeton, a global investment-management firm."],
+  138:["DeWitt ownership group","An investor group led by Bill DeWitt Jr., a longtime baseball executive and investor. It bought the club from the brewer Anheuser-Busch in 1996."],
+  139:["Zalupski ownership group","An investor group led by Patrick Zalupski, a Tampa Bay-area developer and investor. It took over the club from Stuart Sternberg's group in 2025."],
+  140:["Ray C. Davis's ownership group","A group led by Ray C. Davis, co-founder of Energy Transfer, a major pipeline and natural gas company. The group bought the club in 2010."],
+  141:["Rogers Communications","A Canadian telecom and media company with wireless, cable internet and TV businesses, including the Sportsnet network. Edward Rogers is the club's chairman."],
+  142:["Pohlad family","The Pohlad family has owned the club since 1984, when Carl Pohlad bought it. Pohlad Companies is a Minneapolis holding company with interests in banking, real estate and soft-drink bottling."],
+  143:["Middleton ownership group","A partnership led by John Middleton, whose family company John Middleton Co. made pipe tobacco and cigars such as Black & Mild (sold to Altria in 2007). He became controlling partner in 2015."],
+  144:["Atlanta Braves Holdings, Inc.","A publicly traded company spun off from Liberty Media in 2023. It owns the club and The Battery Atlanta, a retail, office, hotel and entertainment district next to the ballpark."],
+  145:["Reinsdorf ownership group","Led by Jerry Reinsdorf since 1981, who made his fortune in real estate investing (Balcor). Reinsdorf also chairs the NBA's Chicago Bulls."],
+  146:["Bruce Sherman's ownership group","Led by Bruce Sherman, former CEO of Private Capital Management, an investment management firm. The group bought the club in 2017."],
+  147:["Yankee Global Enterprises","The Steinbrenner family holding company that owns the club and a minority stake in the YES Network, a regional sports TV channel. Hal Steinbrenner is managing general partner."],
+  158:["Mark Attanasio's ownership group","Led by Mark Attanasio, co-founder of Crescent Capital Group, a Los Angeles investment firm focused on credit. He bought the club in 2005."]
+};
+
+
+function renderFrontOffice(id){
+  const box = $("foBox");
+  if(id === "all"){ $("foWrap").hidden = true; return; }
+  $("foWrap").hidden = false;
+  const po = PARENT_ORG[id];
+  $("parentBox").innerHTML = po
+    ? `<div class="parent-name">${esc(po[0])}</div><div class="parent-text">${esc(po[1])}</div>`
+    : `<div class="parent-text dim">No ownership summary available for this team.</div>`;
+  const fo = FRONT_OFFICE[id];
+  if(!fo || (!fo.o.length && !fo.e.length)){
+    box.innerHTML = `<div class="msg">No front office data has been verified for this team.</div>`;
+    return;
+  }
+  const row = (r, role) => `<tr>
+    <td class="fo-role">${role}</td>
+    <td><strong>${esc(r[0])}</strong></td>
+    <td class="wrap-ok">${esc(r[1])}${r[2] ? `<span class="en block">${esc(r[2])}</span>` : ""}</td>
+  </tr>`;
+  const rows = fo.o.map(r => row(r, "Owner")).concat(fo.e.map(r => row(r, /general manager/i.test(r[1]) ? "GM" : "Baseball Ops")));
+  box.innerHTML = `<table>
+    <thead><tr><th>Level</th><th>Name</th><th>Title</th></tr></thead>
+    <tbody>${rows.join("")}</tbody></table>
+    <div class="count" style="padding:8px 12px 4px">Compiled from MLB.com team staff directories as of ${FRONT_OFFICE_ASOF}. MLB's data feed has no front-office data, so this list can be out of date after front-office changes.</div>`;
+}
+
+/* ---------- Coaching staff ---------- */
+async function loadCoaches(id){
+  if(id === "all"){
+    $("coachBox").innerHTML = `<div class="msg">Select a single team from the menu above to view its coaching staff.</div>`;
+    return;
+  }
+  try{
+    if(!cache.coaches.has(id)){
+      const data = await getJSON(`${API}/teams/${id}/coaches?season=${SEASON}`);
+      const list = (data.roster || []).map(r => {
+        const job = r.job || r.title || "";
+        return {id:r.person?.id, name:r.person?.fullName || "", number:r.jerseyNumber ? Number(r.jerseyNumber) : null, job, ord:coachRank(job)};
+      }).sort((a,b) => a.ord - b.ord || a.name.localeCompare(b.name));
+      cache.coaches.set(id, list);
+    }
+  }catch(e){
+    if(id === state.teamId) $("coachBox").innerHTML = `<div class="msg err">Failed to load (${esc(e.message)}). Please select the team again to retry.</div>`;
+    return;
+  }
+  if(id !== state.teamId) return;
+  state.coaches = cache.coaches.get(id);
+  renderCoaches();
+  const currentCoaches = state.coaches;
+  loadAwardsFor(currentCoaches.map(c => c.id), () => { if(state.coaches === currentCoaches) renderCoaches(); });
+}
+
+function renderCoaches(){
+  if(!state.coaches.length){
+    $("coachBox").innerHTML = `<div class="msg">No coaching staff data was returned for this team (it may not be published yet in the offseason).</div>`;
+    return;
+  }
+  $("coachBox").innerHTML = `<table>
+    <thead><tr><th>No.</th><th>Name</th><th>Role</th><th>Awards</th></tr></thead>
+    <tbody>${state.coaches.map(c => `<tr>
+      <td class="num">${c.number ?? "—"}</td>
+      <td><a href="https://www.mlb.com/player/${c.id}" target="_blank" rel="noopener">${esc(c.name)}</a></td>
+      <td>${esc(c.job || "—")}</td>
+      <td class="awards-cell">${awardsHTML(c.id)}</td>
+    </tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------- Awards ---------- */
+const AWARD_DEFS = [
+  ["Manager of the Year", a => /^(AL|NL)MOY$/i.test(a.id||"") || /^(AL|NL) Manager of the Year/i.test(a.name||"")],
+  ["MVP",                 a => /^(AL|NL)MVP$/i.test(a.id||"") || /^(AL |NL )?(MVP|Most Valuable Player)\b/i.test(a.name||"")],
+  ["Cy Young",            a => /^(AL|NL)CY$/i.test(a.id||"") || /^(AL |NL )?Cy Young/i.test(a.name||"")],
+  ["Rookie of the Year",  a => /^(AL|NL)ROY$/i.test(a.id||"") || /^(AL |NL |MLB )?Rookie of the Year/i.test(a.name||"")],
+  ["Hank Aaron",          a => /hank aaron/i.test(a.name||"")],
+  ["Silver Slugger",      a => /silver slugger/i.test(a.name||"")],
+  ["Gold Glove",          a => /gold glove/i.test(a.name||"")],
+  ["Reliever of the Year",a => /^(AL|NL)REL$/i.test(a.id||"") || /reliever of the year|delivery man of the year/i.test(a.name||"")],
+  ["Comeback Player",     a => /^(AL|NL)CPOY$/i.test(a.id||"") || /^(AL|NL) Comeback Player of the Year/i.test(a.name||"")],
+  ["Roberto Clemente",    a => /clemente/i.test(a.name||"")],
+  ["All-MLB Team",        a => /all-?mlb/i.test(a.name||"")]
+];
+const awardCache = new Map(); // personId -> array of awards | null (failed)
+
+async function loadAwardsFor(ids, onProgress){
+  const need = [...new Set(ids)].filter(id => id && !awardCache.has(id));
+  const chunks = [];
+  for(let i = 0; i < need.length; i += 50) chunks.push(need.slice(i, i + 50));
+  let next = 0;
+  async function worker(){
+    while(next < chunks.length){
+      const chunk = chunks[next++];
+      try{
+        const res = await getJSON(`${API}/people?personIds=${chunk.join(",")}&hydrate=awards`);
+        const got = new Set();
+        (res.people || []).forEach(pp => { awardCache.set(pp.id, pp.awards || []); got.add(pp.id); });
+        chunk.forEach(id => { if(!got.has(id)) awardCache.set(id, []); });
+      }catch(e){
+        chunk.forEach(id => awardCache.set(id, null));
+      }
+      if(onProgress) onProgress();
+    }
+  }
+  await Promise.all([worker(), worker(), worker(), worker()]);
+}
+
+function awardsHTML(id){
+  const list = awardCache.get(id);
+  if(list === undefined) return `<span class="dim">…</span>`;
+  if(list === null) return `<span class="dim">—</span>`;
+  const out = [];
+  for(const [label, test] of AWARD_DEFS){
+    const hits = list.filter(test);
+    if(!hits.length) continue;
+    const seasons = [...new Set(hits.map(h => h.season || (h.date||"").slice(0,4)).filter(Boolean))].sort();
+    const n = seasons.length || hits.length;
+    out.push(`<span class="award" title="${esc(seasons.join(", "))}">${esc(label)}${n > 1 ? " ×" + n : ""}</span>`);
+  }
+  return out.length ? out.join("") : `<span class="dim">—</span>`;
+}
+
+/* ---------- Awards lookup tab ---------- */
+const AWARD_CATALOG = [
+  ["Manager of the Year",        ["ALMOY","NLMOY"]],
+  ["MVP",                        ["ALMVP","NLMVP"]],
+  ["Cy Young",                   ["ALCY","NLCY"]],
+  ["Rookie of the Year",         ["ALROY","NLROY"]],
+  ["Hank Aaron Award",           ["ALHAA","NLHAA"]],
+  ["Silver Slugger",             ["ALSS","NLSS"]],
+  ["Gold Glove",                 ["ALGG","NLGG"]],
+  ["Reliever of the Year",       ["ALREL","NLREL"]],
+  ["Comeback Player of the Year",["ALCPOY","NLCPOY"]],
+  ["Roberto Clemente Award",     ["MLBRC"]],
+  ["All-MLB First Team",         ["MLBAFIRST"]],
+  ["All-MLB Second Team",        ["MLBSECOND"]]
+];
+const aw = {rows:[], loaded:false, sortKey:"season", sortDir:-1, note:""};
+const awCache = new Map();
+const AW_RENDER_CAP = 400;
+
+(function initAwardControls(){
+  $("awAward").innerHTML = `<option value="">All Awards</option>` +
+    AWARD_CATALOG.map(([label]) => `<option value="${esc(label)}">${esc(label)}</option>`).join("");
+  const y = new Date().getFullYear();
+  let opts = `<option value="">All Seasons</option>`;
+  for(let i = y; i >= 1931; i--) opts += `<option value="${i}">${i}</option>`;
+  $("awSeason").innerHTML = opts;
+  $("awSeason").value = String(y);
+})();
+
+async function fetchAward(id, season){
+  const key = id + "|" + (season || "all");
+  if(awCache.has(key)) return awCache.get(key);
+  let list = [];
+  try{
+    const data = await getJSON(`${API}/awards/${id}/recipients${season ? "?season=" + season : ""}`);
+    list = data.awards || [];
+  }catch(e){ list = []; } // not announced yet / no data
+  awCache.set(key, list);
+  return list;
+}
+
+let awToken = 0;
+async function loadAwardsTab(){
+  const my = ++awToken; // ignore results from older, slower requests
+  const thisYear = String(new Date().getFullYear());
+  let defaultNote = "";
+  if(!aw.loaded && $("awSeason").value === thisYear){
+    // First open: show the latest season whose MVP has been announced.
+    const mvp = await fetchAward("ALMVP", thisYear);
+    if(my !== awToken) return;
+    if(!mvp.length){
+      const prev = String(Number(thisYear) - 1);
+      $("awSeason").value = prev;
+      defaultNote = `${thisYear} awards are still being announced. Showing ${prev}; pick ${thisYear} to see the ones announced so far.`;
+    }
+  }
+  const label = $("awAward").value;
+  const season = $("awSeason").value;
+  aw.note = defaultNote;
+  $("awCount").textContent = "";
+  $("awBox").innerHTML = `<div class="msg">Loading awards…</div>`;
+
+  const groups = AWARD_CATALOG.filter(([l]) => !label || l === label);
+  const ids = groups.flatMap(([l, list]) => list);
+  const order = new Map(ids.map((id, i) => [id, i]));
+
+  async function fetchAll(seasonValue){
+    const out = [];
+    let next = 0;
+    async function worker(){
+      while(next < ids.length){
+        const id = ids[next++];
+        const list = await fetchAward(id, seasonValue);
+        list.forEach(a => out.push(a));
+      }
+    }
+    await Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+    return out;
+  }
+
+  const raw = await fetchAll(season);
+  if(my !== awToken) return;
+  if(!aw.note && season === thisYear) aw.note = `Some ${thisYear} awards may not be announced yet.`;
+
+  aw.rows = raw.map(a => {
+    const pos = a.player?.primaryPosition;
+    const isMgr = /MOY$/i.test(a.id || "");
+    const team = state.teams.find(t => t.id === a.team?.id);
+    return {
+      id: a.player?.id,
+      name: a.player?.nameFirstLast || a.player?.fullName || "",
+      award: a.name || a.id,
+      ord: order.get(a.id) ?? 99,
+      season: a.season || (a.date || "").slice(0, 4),
+      pos: isMgr ? "Manager" : (pos && pos.abbreviation !== "X" ? pos.name : "—"),
+      team: team ? team.name : ""
+    };
+  });
+  aw.loaded = true;
+  renderAwards();
+}
+
+function renderAwards(){
+  const q = norm($("awName").value.trim());
+  const rows = aw.rows.filter(r => !q || norm(r.name).includes(q));
+
+  const k = aw.sortKey, d = aw.sortDir;
+  const cmp = (a, b) => String(a).localeCompare(String(b));
+  rows.sort((a, b) => {
+    let r = 0;
+    if(k === "season") r = Number(a.season) - Number(b.season);
+    else if(k === "award") r = a.ord - b.ord || cmp(a.award, b.award);
+    else if(k === "name") r = cmp(a.name, b.name);
+    else if(k === "pos") r = cmp(a.pos, b.pos);
+    else if(k === "team") r = cmp(a.team, b.team);
+    if(r === 0) return (Number(b.season) - Number(a.season)) || (a.ord - b.ord) || cmp(a.name, b.name);
+    return r * d;
+  });
+
+  const shown = rows.slice(0, AW_RENDER_CAP);
+  $("awCount").textContent =
+    `Showing ${shown.length} of ${rows.length} results` +
+    (rows.length > AW_RENDER_CAP ? ` (first ${AW_RENDER_CAP}; narrow by season or name to see the rest)` : "") +
+    (aw.note ? ` · ${aw.note}` : "");
+
+  if(!aw.rows.length){
+    $("awBox").innerHTML = `<div class="msg">No awards found for this selection. They may not be announced yet.</div>`;
+    return;
+  }
+  if(!shown.length){ $("awBox").innerHTML = `<div class="msg">No winners match your search.</div>`; return; }
+
+  const arrow = key => aw.sortKey === key ? (aw.sortDir === 1 ? " ▲" : " ▼") : "";
+  const th = (key, label) => `<th class="sortable" data-sort="${key}">${label}${arrow(key)}</th>`;
+  $("awBox").innerHTML = `<table>
+    <thead><tr>${th("season","Season")}${th("award","Award")}${th("name","Winner")}${th("pos","Position")}${th("team","Team")}</tr></thead>
+    <tbody>${shown.map(r => `<tr>
+      <td class="num">${esc(r.season)}</td>
+      <td>${esc(r.award)}</td>
+      <td><a href="https://www.mlb.com/player/${r.id}" target="_blank" rel="noopener">${esc(r.name)}</a></td>
+      <td>${esc(r.pos)}</td>
+      <td class="wrap-ok">${esc(r.team || "—")}</td>
+    </tr>`).join("")}</tbody></table>`;
+
+  $("awBox").querySelectorAll("th.sortable").forEach(h => h.addEventListener("click", () => {
+    const key = h.dataset.sort;
+    if(aw.sortKey === key) aw.sortDir *= -1; else { aw.sortKey = key; aw.sortDir = key === "season" ? -1 : 1; }
+    renderAwards();
+  }));
+}
+
+/* ---------- Free agents ---------- */
+const fa = {list:[], loaded:false, season:null, sortKey:"name", sortDir:1};
+const faCache = new Map();
+
+(function initFASeasons(){
+  const now = new Date();
+  // After the World Series (Nov onward) the relevant free-agent class is the season that just ended.
+  const latest = now.getMonth() >= 9 ? now.getFullYear() : now.getFullYear() - 1;
+  const years = [latest, latest - 1, latest - 2];
+  $("faSeason").innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+  fa.season = latest;
+})();
+
+async function loadFA(){
+  const season = Number($("faSeason").value);
+  fa.season = season;
+  $("faCount").textContent = "";
+  $("faBox").innerHTML = `<div class="msg">Loading ${season} free agents…</div>`;
+  try{
+    if(!faCache.has(season)){
+      const data = await getJSON(`${API}/people/freeAgents?season=${season}`);
+      const raw = data.freeAgents || data.people || [];
+      const ids = [...new Set(raw.map(x => x.player?.id ?? x.id).filter(Boolean))];
+
+      // Fetch details (position, birth country, age) in chunks
+      const details = new Map();
+      for(let i = 0; i < ids.length; i += 100){
+        const chunk = ids.slice(i, i + 100);
+        const res = await getJSON(`${API}/people?personIds=${chunk.join(",")}`);
+        (res.people || []).forEach(pp => details.set(pp.id, pp));
+      }
+
+      const list = raw.map(x => {
+        const id = x.player?.id ?? x.id;
+        const d = details.get(id) || {};
+        return {
+          id,
+          name: x.player?.fullName || d.fullName || x.fullName || "",
+          pos: d.primaryPosition?.abbreviation || x.position?.abbreviation || "",
+          country: d.birthCountry || "",
+          age: d.currentAge ?? null,
+          throws: d.pitchHand?.code || "",
+          bats: d.batSide?.code || "",
+          oldTeam: x.originalTeam?.name || "",
+          newTeam: x.newTeam?.name || "",
+          dateSigned: x.dateSigned || "",
+          dateDeclared: x.dateDeclared || ""
+        };
+      });
+      faCache.set(season, list);
+    }
+  }catch(e){
+    $("faBox").innerHTML = `<div class="msg err">Failed to load free agents (${esc(e.message)}). Re-select the season to retry.</div>`;
+    return;
+  }
+  fa.list = faCache.get(season);
+  fa.loaded = true;
+  buildFAOptions();
+  renderFA();
+  const currentFA = fa.list;
+  loadAwardsFor(currentFA.map(p => p.id), () => { if(fa.list === currentFA) renderFA(); });
+}
+
+function buildFAOptions(){
+  const prevPos = $("faPos").value, prevCountry = $("faCountry").value;
+  const poss = [...new Set(fa.list.map(p => p.pos).filter(Boolean))].sort((a,b) => posIdx(a) - posIdx(b));
+  $("faPos").innerHTML = `<option value="">All</option>` +
+    poss.map(p => `<option value="${esc(p)}">${esc(POS_NAME[p] || p)}</option>`).join("");
+  const countries = [...new Set(fa.list.map(p => p.country).filter(Boolean))]
+    .sort((a,b) => (a==="USA"?-1:b==="USA"?1:0) || a.localeCompare(b));
+  $("faCountry").innerHTML = `<option value="">All</option>` +
+    countries.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if(poss.includes(prevPos)) $("faPos").value = prevPos;
+  if(countries.includes(prevCountry)) $("faCountry").value = prevCountry;
+}
+
+function renderFA(){
+  const q = norm($("faName").value.trim());
+  const pos = $("faPos").value, country = $("faCountry").value, status = $("faStatus").value;
+
+  if(!fa.list.length){
+    $("faCount").textContent = "";
+    $("faBox").innerHTML = `<div class="msg">No free agents were returned for ${fa.season}. The list may not be published yet.</div>`;
+    return;
+  }
+
+  let rows = fa.list.filter(p =>
+    (!q || norm(p.name).includes(q)) &&
+    (!pos || p.pos === pos) &&
+    (!country || p.country === country) &&
+    (!status || (status === "signed" ? !!p.newTeam : !p.newTeam)));
+
+  const k = fa.sortKey, d = fa.sortDir;
+  const cmpStr = (a,b) => String(a).localeCompare(String(b));
+  rows.sort((a,b) => {
+    let r = 0;
+    if(k === "pos") r = posIdx(a.pos) - posIdx(b.pos);
+    else if(k === "age") r = (a.age ?? 999) - (b.age ?? 999);
+    else if(k === "country") r = cmpStr(a.country, b.country);
+    else if(k === "oldTeam") r = cmpStr(a.oldTeam, b.oldTeam);
+    else if(k === "status") r = cmpStr(a.newTeam, b.newTeam);
+    else r = cmpStr(a.name, b.name);
+    return (r || cmpStr(a.name, b.name)) * d;
+  });
+
+  $("faCount").textContent = `Showing ${rows.length} of ${fa.list.length} free agents`;
+  if(!rows.length){ $("faBox").innerHTML = `<div class="msg">No free agents match your filters.</div>`; return; }
+
+  const arrow = key => fa.sortKey === key ? (fa.sortDir === 1 ? " ▲" : " ▼") : "";
+  const th = (key, label) => `<th class="sortable" data-sort="${key}">${label}${arrow(key)}</th>`;
+  $("faBox").innerHTML = `<table>
+    <thead><tr>${th("name","Name")}${th("pos","Position")}${th("country","Nationality")}<th>T / B</th>${th("age","Age")}<th>Awards</th>${th("oldTeam","Previous Team")}${th("status","Status")}</tr></thead>
+    <tbody>${rows.map(p => `<tr>
+      <td><a href="https://www.mlb.com/player/${p.id}" target="_blank" rel="noopener">${esc(p.name)}</a></td>
+      <td>${esc(POS_NAME[p.pos] || p.pos || "—")}</td>
+      <td>${p.country ? esc(p.country) : "—"}</td>
+      <td>${esc(p.throws || "—")} / ${esc(p.bats || "—")}</td>
+      <td>${p.age ?? "—"}</td>
+      <td class="awards-cell">${awardsHTML(p.id)}</td>
+      <td class="wrap-ok">${esc(p.oldTeam || "—")}</td>
+      <td class="wrap-ok">${p.newTeam
+        ? `<span class="chip sign">Signed</span> ${esc(p.newTeam)}${p.dateSigned ? `<span class="en block">${esc(p.dateSigned)}</span>` : ""}`
+        : `<span class="chip ok">Available</span>`}</td>
+    </tr>`).join("")}</tbody></table>`;
+
+  $("faBox").querySelectorAll("th.sortable").forEach(h => h.addEventListener("click", () => {
+    const key = h.dataset.sort;
+    if(fa.sortKey === key) fa.sortDir *= -1; else { fa.sortKey = key; fa.sortDir = 1; }
+    renderFA();
+  }));
+}
+
+/* ---------- Events ---------- */
+function showTab(which){
+  $("paneRoster").hidden = which !== "roster";
+  $("paneCoaches").hidden = which !== "coaches";
+  $("paneFA").hidden = which !== "fa";
+  $("paneAwards").hidden = which !== "awards";
+  $("teamBar").hidden = which === "fa" || which === "awards";
+  $("tabRoster").setAttribute("aria-selected", which === "roster");
+  $("tabCoaches").setAttribute("aria-selected", which === "coaches");
+  $("tabFA").setAttribute("aria-selected", which === "fa");
+  $("tabAwards").setAttribute("aria-selected", which === "awards");
+  if(which === "fa" && !fa.loaded) loadFA();
+  if(which === "awards" && !aw.loaded) loadAwardsTab();
+}
+$("tabRoster").addEventListener("click", () => showTab("roster"));
+$("tabCoaches").addEventListener("click", () => showTab("coaches"));
+$("tabFA").addEventListener("click", () => showTab("fa"));
+$("tabAwards").addEventListener("click", () => showTab("awards"));
+$("teamSel").addEventListener("change", e => selectTeam(e.target.value));
+["fName","fPos","fCountry"].forEach(id => $(id).addEventListener("input", renderRoster));
+["faName","faPos","faCountry","faStatus"].forEach(id => $(id).addEventListener("input", renderFA));
+$("faSeason").addEventListener("change", loadFA);
+$("awAward").addEventListener("change", loadAwardsTab);
+$("awSeason").addEventListener("change", loadAwardsTab);
+$("awName").addEventListener("input", renderAwards);
+$("awReset").addEventListener("click", () => {
+  $("awAward").value = ""; $("awName").value = ""; $("awSeason").value = String(new Date().getFullYear());
+  loadAwardsTab();
+});
+$("faReset").addEventListener("click", () => {
+  $("faName").value = ""; $("faPos").value = ""; $("faCountry").value = ""; $("faStatus").value = "";
+  renderFA();
+});
+$("btnReset").addEventListener("click", () => {
+  $("fName").value = ""; $("fPos").value = ""; $("fCountry").value = "";
+  renderRoster();
+});
+
+// The subtitle stays fixed; only failures replace it so problems remain visible.
+function setStatus(t){ if(/^(Could not|Script error|Error)/.test(t)) $("status").textContent = t; }
+window.addEventListener("error", e => setStatus("Script error: " + e.message));
+window.addEventListener("unhandledrejection", e => setStatus("Error: " + (e.reason && e.reason.message || e.reason)));
+setStatus("Script running. Loading team list from MLB…");
+loadTeams();
+</script>
+</body>
+</html>
